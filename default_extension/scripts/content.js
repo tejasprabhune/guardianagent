@@ -20,6 +20,47 @@ async function getGeneratedText() {
     return data.generation;
 }
 
+async function getGeneratedImage() {
+    const url = "http://127.0.0.1:5000/generateimg";
+    const response = await fetch(url);
+    const data = await response.json();
+    console.log(data);
+    return data.generation;
+}
+
+function alertImg(src) {
+    console.log(text);
+    const card = document.createElement("div");
+
+    card.style.width = "300px";
+    card.style.height = "auto";
+    card.style.backgroundColor = "white";
+    card.style.textAlign = "left";
+    card.style.zIndex = "99999";
+    card.className = "card";
+
+    card.style.color = "#aaa";
+    card.style.background = "$fafafa";
+    card.style.boxShadow = "0 5px 50px 1px";
+    card.style.borderRadius = "0.4em";
+
+    card.style.position = "absolute";
+    card.style.top = "0px";
+    card.style.left = "0px";
+
+    const cardImg = document.createElement("img");
+    cardImg.src = src;
+    cardImg.style.paddingTop = "50px";
+    cardImg.style.paddingBottom = "50px";
+    cardImg.style.paddingRight = "20px";
+    cardImg.style.paddingLeft = "20px";
+    cardImg.style.width = "100px";
+
+    card.appendChild(cardImg);
+
+    document.body.appendChild(card);
+}
+
 function createCard(text, x, y) {
     console.log(text);
     const card = document.createElement("div");
@@ -91,7 +132,34 @@ function createSelectionCard(selection, x, y) {
         callGuardian(selection, x, y);
     }
 
+    const imageButton = document.createElement("p");
+    imageButton.innerText = "Generate Image!";
+    imageButton.style.paddingTop = "10px";
+    imageButton.style.paddingBottom = "10px";
+    imageButton.style.paddingRight = "10px";
+    imageButton.style.paddingLeft = "10px";
+    imageButton.style.color = "black";
+    imageButton.onmouseover = function() {
+        imageButton.style.cursor = "pointer";
+    }
+    imageButton.onmouseout = function() {
+        imageButton.style.cursor = "default";
+    }
+
+    imageButton.onclick = function() {
+      /*var xmlHttp = new XMLHttpRequest();
+      xmlHttp.onreadystatechange = function () {
+         if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+            callback(xmlHttp.responseText);
+         }
+      }
+      xmlHttp.open("POST", theUrl, true); 
+      xmlHttp.send(JSON.stringify(data));*/
+        genImg(prompt, x, y);
+    }
+
     card.appendChild(cardText);
+    card.appendChild(imageButton);
 
     document.body.appendChild(card);
 }
@@ -111,6 +179,25 @@ async function callGuardian(selection, x, y) {
         getGeneratedText().then((text) => {
             console.log(text);
             createCard(text, x, y);
+        });
+    });
+}
+
+async function genImg(prompt, x, y) {
+    console.log("Img Prompt: ", prompt);
+    const rawResponse = await fetch('http://127.0.0.1:5000/guardian', {
+        method: 'POST',
+        mode: "no-cors",
+        credentials: "same-origin",
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ query: prompt })
+    }).then(response => {
+        getGeneratedImage().then((bytes) => {
+            //console.log(text);
+            alertImg("data:image/png;base64," + bytes, x, y);
         });
     });
 }
